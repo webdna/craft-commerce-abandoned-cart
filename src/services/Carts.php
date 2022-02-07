@@ -325,10 +325,16 @@ class Carts extends Component
 
         // Get from address from site settings
         $settings = Craft::$app->systemSettings->getSettings('email');
+        // Lets get the multisite fromEmail/fromName
+        $orderSiteId = $order->orderSite->id;
+        $site = Craft::$app->getSites()->getSiteById($orderSiteId);
+        // attempt to get from env
+        $fromEmail = Craft::parseEnv('$SYSTEM_EMAIL_'. strtoupper($site->handle)) ?? Craft::parseEnv($settings['fromEmail']);
+        $fromName = $site->name ?? Craft::parseEnv($settings['fromName']);
 
         // build the email
         $newEmail = new Message();
-        $newEmail->setFrom([Craft::parseEnv($settings['fromEmail']) => Craft::parseEnv($settings['fromName'])]);
+        $newEmail->setFrom([$fromEmail => $fromName]);
         $newEmail->setTo($recipient);
         $newEmail->setSubject($subject);
         $newEmail->setHtmlBody($emailBody);
